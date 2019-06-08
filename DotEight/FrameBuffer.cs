@@ -8,7 +8,7 @@ using SFML.System;
 
 namespace DotEight
 {
-    internal class Framebuffer
+    public class Framebuffer
     {
         public RectangleShape[] Pixels { get; }
 

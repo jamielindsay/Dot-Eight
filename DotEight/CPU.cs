@@ -10,49 +10,26 @@ namespace DotEight
         private byte[] MEMORY = new byte[4096];
 
         // Registers
-        private Stack<UInt16> STACK; // Memory address stack
-        private UInt16 I; // Stores memory addresses
+        private UInt16 ProgramCounter; // Stores currently executing address
+        private Stack<UInt16> AddressStack; // Stack of addresses to return to after subroutine finishes
 
-        private byte V0;
-        private byte V1;
-        private byte V2;
-        private byte V3;
-        private byte V4;
-        private byte V5;
-        private byte V6;
-        private byte V7;
-        private byte V8;
-        private byte V9;
-        private byte VA;
-        private byte VB;
-        private byte VC;
-        private byte VD;
-        private byte VE;
-        private byte VF;
+        private byte[] V;
+
+        private UInt16 I; // Used to store a memory address for some opcodes
 
         // Screen
-        private Framebuffer framebuffer;
+        public Framebuffer CurrentFramebuffer { get; set; }
 
         public CPU()
         {
-            V0 = 0;
-            V1 = 0;
-            V2 = 0;
-            V3 = 0;
-            V4 = 0;
-            V5 = 0;
-            V6 = 0;
-            V7 = 0;
-            V8 = 0;
-            V9 = 0;
-            VA = 0;
-            VB = 0;
-            VC = 0;
-            VD = 0;
-            VE = 0;
-            VF = 0;
+            ProgramCounter = 0x0200;
+            AddressStack = new Stack<UInt16>(16);
 
-            framebuffer = new Framebuffer();
+            V = new byte[16];
+
+            I = 0;
+
+            CurrentFramebuffer = new Framebuffer();
         }
 
         public int Execute(UInt16 opcode)
@@ -63,58 +40,86 @@ namespace DotEight
                     switch (opcode)
                     {
                         case 0x00E0:
-                            framebuffer.ClearScreen();
+                            CurrentFramebuffer.ClearScreen();
                             return 1;
                         case 0x00EE:
+                            ProgramCounter = AddressStack.Pop();
                             return 2;
                         default: // Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
                             return 3;
                     }
                 case 0x1000:
+                    ProgramCounter = (UInt16)(opcode & 0x0FFF);
                     return 4;
                 case 0x2000:
+                    AddressStack.Push(ProgramCounter);
+                    ProgramCounter = (UInt16)(opcode & 0x0FFF);
                     return 5;
                 case 0x3000:
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] == (UInt16)(opcode & 0x00FF) ? (UInt16)2 : (UInt16)0;
                     return 6;
                 case 0x4000:
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] != (UInt16)(opcode & 0x00FF) ? (UInt16)2 : (UInt16)0;
                     return 7;
                 case 0x5000:
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] == (UInt16)(opcode & 0x00F0) ? (UInt16)2 : (UInt16)0;
                     return 8;
                 case 0x6000:
+                    V[(UInt16)(opcode & 0x0F00)] = (byte)(opcode & 0x00FF);
                     return 9;
                 case 0x7000:
+                    V[(UInt16)(opcode & 0x0F00)] += (byte)(opcode & 0x00FF);
                     return 10;
                 case 0x8000:
                     switch (opcode & 0xF00F)
                     {
                         case 0x8000:
+                            V[(UInt16)(opcode & 0x0F00)] = V[(UInt16)(opcode & 0x00F0)];
                             return 11;
                         case 0x8001:
+                            V[(UInt16)(opcode & 0x0F00)] |= V[(UInt16)(opcode & 0x00F0)];
                             return 12;
                         case 0x8002:
+                            V[(UInt16)(opcode & 0x0F00)] &= V[(UInt16)(opcode & 0x00F0)];
                             return 13;
                         case 0x8003:
+                            V[(UInt16)(opcode & 0x0F00)] ^= V[(UInt16)(opcode & 0x00F0)];
                             return 14;
                         case 0x8004:
+                            UInt16 r8004 = (UInt16)(V[(UInt16)(opcode & 0x0F00)] + V[(UInt16)(opcode & 0x00F0)]);
+                            V[(UInt16)(opcode & 0x0F00)] = (byte)r8004;
+                            V[0xF] = (byte)(r8004 % 255);
                             return 15;
                         case 0x8005:
+                            UInt16 r8005 = (UInt16)(V[(UInt16)(opcode & 0x0F00)] - V[(UInt16)(opcode & 0x00F0)]);
+                            V[(UInt16)(opcode & 0x0F00)] = (byte)r8005;
+                            V[0xF] = (byte)(r8005 % 255);
                             return 16;
                         case 0x8006:
+                            V[(UInt16)(opcode & 0x0F00)] >>= 1;
                             return 17;
                         case 0x8007:
+                            UInt16 r8006 = (UInt16)(V[(UInt16)(opcode & 0x00F0)] - V[(UInt16)(opcode & 0x0F00)]);
+                            V[(UInt16)(opcode & 0x0F00)] = (byte)r8006;
+                            V[0xF] = (byte)(r8006 % 255);
                             return 18;
                         case 0x800E:
+                            V[(UInt16)(opcode & 0x0F00)] <<= 1;
                             return 19;
                         default:
                             return 0;
                     }
                 case 0x9000:
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] != (UInt16)(opcode & 0x00F0) ? (UInt16)2 : (UInt16)0;
                     return 20;
                 case 0xA000:
+                    I = (UInt16)(opcode & 0x0FFF);
                     return 21;
                 case 0xB000:
+                    ProgramCounter = (UInt16)(V[0] + (byte)(opcode & 0x0FFF));
                     return 22;
                 case 0xC000:
+                    V[(UInt16)(opcode & 0x0F00)] = (byte)((UInt16)new Random(255).Next() & (UInt16)(opcode & 0x00FF));
                     return 23;
                 case 0xD000:
                     return 24;
@@ -140,6 +145,7 @@ namespace DotEight
                         case 0xF018:
                             return 30;
                         case 0xF01E:
+                            I += V[(UInt16)(opcode & 0x0F00)];
                             return 31;
                         case 0xF029:
                             return 32;

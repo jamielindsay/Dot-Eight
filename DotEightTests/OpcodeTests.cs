@@ -1,6 +1,10 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DotEight;
+using SFML;
+using SFML.Graphics;
+using SFML.Window;
+using SFML.System;
 
 namespace DotEightTests
 {
@@ -12,10 +16,11 @@ namespace DotEightTests
         [TestMethod]
         public void Clear()
         {
-            int expected = 1;
-            UInt16 opcode = 0x00E0;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.Execute(0x00E0);
+            foreach (RectangleShape pixel in cpu.CurrentFramebuffer.Pixels)
+            {
+                Assert.AreEqual(pixel.FillColor, new Color(0, 0, 0));
+            }
         }
 
         [TestMethod]
