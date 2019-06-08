@@ -30,6 +30,9 @@ namespace DotEight
         private byte VE;
         private byte VF;
 
+        // Screen
+        private Framebuffer framebuffer;
+
         public CPU()
         {
             V0 = 0;
@@ -48,9 +51,11 @@ namespace DotEight
             VD = 0;
             VE = 0;
             VF = 0;
+
+            framebuffer = new Framebuffer();
         }
 
-        public static int Execute(UInt16 opcode)
+        public int Execute(UInt16 opcode)
         {
             switch (opcode & 0xF000)
             {
@@ -58,6 +63,7 @@ namespace DotEight
                     switch (opcode)
                     {
                         case 0x00E0:
+                            framebuffer.ClearScreen();
                             return 1;
                         case 0x00EE:
                             return 2;

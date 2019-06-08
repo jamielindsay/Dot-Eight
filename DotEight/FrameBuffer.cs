@@ -15,18 +15,10 @@ namespace DotEight
         public Framebuffer()
         {
             Pixels = new RectangleShape[2048];
-            int i = 0;
-            for (int y = 0; y < 32; y++)
-            {
-                for (int x = 0; x < 64; x++)
-                {
-                    Pixels[i] = AddPixel(new Vector2f(x * 20, y * 20), 0, 0, 0);
-                    i++;
-                }
-            }
+            ClearScreen();
         }
 
-        private static RectangleShape AddPixel(Vector2f position, byte red, byte green, byte blue)
+        private static RectangleShape NewPixel(Vector2f position, byte red, byte green, byte blue)
         {
             RectangleShape pixel = new RectangleShape
             {
@@ -35,6 +27,19 @@ namespace DotEight
                 Position = position
             };
             return pixel;
+        }
+
+        public void ClearScreen()
+        {
+            int i = 0;
+            for (int y = 0; y < 32; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
+                    Pixels[i] = NewPixel(new Vector2f(x * 20, y * 20), 0, 0, 0);
+                    i++;
+                }
+            }
         }
 
         public void TestDraw()
