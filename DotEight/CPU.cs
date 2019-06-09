@@ -10,10 +10,10 @@ namespace DotEight
         private byte[] MEMORY = new byte[4096];
 
         // Registers
-        private UInt16 ProgramCounter; // Stores currently executing address
-        private Stack<UInt16> AddressStack; // Stack of addresses to return to after subroutine finishes
+        public UInt16 ProgramCounter; // Stores currently executing address
+        public Stack<UInt16> AddressStack; // Stack of addresses to return to after subroutine finishes
 
-        private byte[] V;
+        public byte[] V;
 
         private UInt16 I; // Used to store a memory address for some opcodes
 
@@ -56,55 +56,57 @@ namespace DotEight
                     ProgramCounter = (UInt16)(opcode & 0x0FFF);
                     return 5;
                 case 0x3000:
-                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] == (UInt16)(opcode & 0x00FF) ? (UInt16)2 : (UInt16)0;
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00) >> 8] == (UInt16)(opcode & 0x00FF) ? (UInt16)2 : (UInt16)0;
                     return 6;
                 case 0x4000:
-                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] != (UInt16)(opcode & 0x00FF) ? (UInt16)2 : (UInt16)0;
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00) >> 8] != (UInt16)(opcode & 0x00FF) ? (UInt16)2 : (UInt16)0;
                     return 7;
                 case 0x5000:
-                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] == (UInt16)(opcode & 0x00F0) ? (UInt16)2 : (UInt16)0;
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00) >> 8] == V[(UInt16)(opcode & 0x00F0) >> 4] ? (UInt16)2 : (UInt16)0;
                     return 8;
                 case 0x6000:
-                    V[(UInt16)(opcode & 0x0F00)] = (byte)(opcode & 0x00FF);
+                    V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)(opcode & 0x00FF);
                     return 9;
                 case 0x7000:
-                    V[(UInt16)(opcode & 0x0F00)] += (byte)(opcode & 0x00FF);
+                    V[(UInt16)(opcode & 0x0F00) >> 8] += (byte)(opcode & 0x00FF);
                     return 10;
                 case 0x8000:
                     switch (opcode & 0xF00F)
                     {
                         case 0x8000:
-                            V[(UInt16)(opcode & 0x0F00)] = V[(UInt16)(opcode & 0x00F0)];
+                            V[(UInt16)(opcode & 0x0F00) >> 8] = V[(UInt16)(opcode & 0x00F0) >> 4];
                             return 11;
                         case 0x8001:
-                            V[(UInt16)(opcode & 0x0F00)] |= V[(UInt16)(opcode & 0x00F0)];
+                            V[(UInt16)(opcode & 0x0F00) >> 8] |= V[(UInt16)(opcode & 0x00F0) >> 4];
                             return 12;
                         case 0x8002:
-                            V[(UInt16)(opcode & 0x0F00)] &= V[(UInt16)(opcode & 0x00F0)];
+                            V[(UInt16)(opcode & 0x0F00) >> 8] &= V[(UInt16)(opcode & 0x00F0) >> 4];
                             return 13;
                         case 0x8003:
-                            V[(UInt16)(opcode & 0x0F00)] ^= V[(UInt16)(opcode & 0x00F0)];
+                            V[(UInt16)(opcode & 0x0F00) >> 8] ^= V[(UInt16)(opcode & 0x00F0) >> 4];
                             return 14;
                         case 0x8004:
-                            UInt16 r8004 = (UInt16)(V[(UInt16)(opcode & 0x0F00)] + V[(UInt16)(opcode & 0x00F0)]);
-                            V[(UInt16)(opcode & 0x0F00)] = (byte)r8004;
-                            V[0xF] = (byte)(r8004 % 255);
+                            UInt16 r8004 = (UInt16)(V[(UInt16)(opcode & 0x0F00) >> 8] + V[(UInt16)(opcode & 0x00F0) >> 4]);
+                            V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)r8004;
+                            V[0xF] = (byte)(r8004 / 256);
                             return 15;
                         case 0x8005:
-                            UInt16 r8005 = (UInt16)(V[(UInt16)(opcode & 0x0F00)] - V[(UInt16)(opcode & 0x00F0)]);
-                            V[(UInt16)(opcode & 0x0F00)] = (byte)r8005;
-                            V[0xF] = (byte)(r8005 % 255);
+                            UInt16 r8005 = (UInt16)(V[(UInt16)(opcode & 0x0F00) >> 8] - V[(UInt16)(opcode & 0x00F0) >> 4]);
+                            V[0xF] = (byte)(V[(UInt16)(opcode & 0x0F00) >> 8] / V[(UInt16)(opcode & 0x00F0) >> 4]);
+                            V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)r8005;
                             return 16;
                         case 0x8006:
-                            V[(UInt16)(opcode & 0x0F00)] >>= 1;
+                            V[0xF] = (byte)(V[(UInt16)(opcode & 0x0F00) >> 8] & 1);
+                            V[(UInt16)(opcode & 0x0F00) >> 8] >>= 1;
                             return 17;
                         case 0x8007:
-                            UInt16 r8006 = (UInt16)(V[(UInt16)(opcode & 0x00F0)] - V[(UInt16)(opcode & 0x0F00)]);
-                            V[(UInt16)(opcode & 0x0F00)] = (byte)r8006;
-                            V[0xF] = (byte)(r8006 % 255);
+                            UInt16 r8006 = (UInt16)(V[(UInt16)(opcode & 0x00F0) >> 4] - V[(UInt16)(opcode & 0x0F00) >> 8]);
+                            V[0xF] = (byte)(V[(UInt16)(opcode & 0x00F0) >> 4] / V[(UInt16)(opcode & 0x0F00) >> 8]);
+                            V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)r8006;
                             return 18;
                         case 0x800E:
-                            V[(UInt16)(opcode & 0x0F00)] <<= 1;
+                            V[0xF] = (byte)(V[(UInt16)(opcode & 0x0F00) >> 8] >> 7);
+                            V[(UInt16)(opcode & 0x0F00) >> 8] <<= 1;
                             return 19;
                         default:
                             return 0;

@@ -26,10 +26,10 @@ namespace DotEightTests
         [TestMethod]
         public void Return()
         {
-            int expected = 2;
-            UInt16 opcode = 0x00EE;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            UInt16 expected = 0x0469;
+            cpu.AddressStack.Push(expected);
+            cpu.Execute(0x00EE);
+            Assert.AreEqual(expected, cpu.ProgramCounter);
         }
 
         [TestMethod]
@@ -44,145 +44,149 @@ namespace DotEightTests
         [TestMethod]
         public void Jump()
         {
-            int expected = 4;
-            UInt16 opcode = 0x1698;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.Execute(0x1698);
+            Assert.AreEqual(0x0698, cpu.ProgramCounter);
         }
 
         [TestMethod]
         public void Call()
         {
-            int expected = 5;
-            UInt16 opcode = 0x2340;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            UInt16 expected = 0x222;
+            cpu.ProgramCounter = expected;
+            cpu.Execute(0x2340);
+            Assert.AreEqual(expected, cpu.AddressStack.Pop());
+            Assert.AreEqual(0x0340, cpu.ProgramCounter);
         }
 
         [TestMethod]
         public void SkipEquals()
         {
-            int expected = 6;
-            UInt16 opcode = 0x3333;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x33;
+            cpu.ProgramCounter = 0x202;
+            cpu.Execute(0x3433);
+            UInt16 expected = 0x202 + 2;
+            Assert.AreEqual(expected, cpu.ProgramCounter);
         }
 
         [TestMethod]
         public void SkipNotEquals()
         {
-            int expected = 7;
-            UInt16 opcode = 0x4444;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[5] = 0x33;
+            cpu.ProgramCounter = 0x202;
+            cpu.Execute(0x4544);
+            UInt16 expected = 0x202 + 2;
+            Assert.AreEqual(expected, cpu.ProgramCounter);
         }
 
         [TestMethod]
         public void SkipEqualsRegister()
         {
-            int expected = 8;
-            UInt16 opcode = 0x5460;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x33;
+            cpu.V[5] = 0x33;
+            cpu.ProgramCounter = 0x202;
+            cpu.Execute(0x5450);
+            UInt16 expected = 0x202 + 2;
+            Assert.AreEqual(expected, cpu.ProgramCounter);
         }
 
         [TestMethod]
         public void SetRegister()
         {
-            int expected = 9;
-            UInt16 opcode = 0x6666;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.Execute(0x6433);
+            Assert.AreEqual(0x33, cpu.V[4]);
         }
 
         [TestMethod]
         public void AddToRegister()
         {
-            int expected = 10;
-            UInt16 opcode = 0x7777;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.Execute(0x7403);
+            Assert.AreEqual(0x30 + 0x3, cpu.V[4]);
         }
 
         [TestMethod]
         public void StoreRegister()
         {
-            int expected = 11;
-            UInt16 opcode = 0x8110;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.V[5] = 0x33;
+            cpu.Execute(0x8450);
+            Assert.AreEqual(0x33, cpu.V[4]);
         }
 
         [TestMethod]
         public void Or()
         {
-            int expected = 12;
-            UInt16 opcode = 0x8001;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.V[5] = 0x33;
+            cpu.Execute(0x8451);
+            Assert.AreEqual(0x33, cpu.V[4]);
         }
 
         [TestMethod]
         public void And()
         {
-            int expected = 13;
-            UInt16 opcode = 0x8002;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.V[5] = 0x33;
+            cpu.Execute(0x8452);
+            Assert.AreEqual(0x30, cpu.V[4]);
         }
 
         [TestMethod]
         public void Xor()
         {
-            int expected = 14;
-            UInt16 opcode = 0x8003;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.V[5] = 0x33;
+            cpu.Execute(0x8453);
+            Assert.AreEqual(0x3, cpu.V[4]);
         }
 
         [TestMethod]
         public void AddRegisters()
         {
-            int expected = 15;
-            UInt16 opcode = 0x8004;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 255;
+            cpu.V[5] = 255;
+            cpu.Execute(0x8454);
+            Assert.AreEqual(254, cpu.V[4]);
+            Assert.AreEqual(1, cpu.V[0xF]);
         }
 
         [TestMethod]
         public void SubtractRegisters()
         {
-            int expected = 16;
-            UInt16 opcode = 0x8005;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 255;
+            cpu.V[5] = 255;
+            cpu.Execute(0x8455);
+            Assert.AreEqual(0, cpu.V[4]);
+            Assert.AreEqual(1, cpu.V[0xF]);
         }
 
         [TestMethod]
         public void BitShiftRight()
         {
-            int expected = 17;
-            UInt16 opcode = 0x8006;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0b1011;
+            cpu.Execute(0x8456);
+            Assert.AreEqual(0b0101, cpu.V[4]);
+            Assert.AreEqual(1, cpu.V[0xF]);
         }
 
         [TestMethod]
         public void SubtractRegistersReverse()
         {
-            int expected = 18;
-            UInt16 opcode = 0x8007;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 255;
+            cpu.V[5] = 254;
+            cpu.Execute(0x8457);
+            Assert.AreEqual(255, cpu.V[4]);
+            Assert.AreEqual(0, cpu.V[0xF]);
         }
 
         [TestMethod]
         public void BitShiftLeft()
         {
-            int expected = 19;
-            UInt16 opcode = 0x800E;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0b1010_1011;
+            cpu.Execute(0x845E);
+            Assert.AreEqual(0b0101_0110, cpu.V[4]);
+            Assert.AreEqual(1, cpu.V[0xF]);
         }
 
         [TestMethod]
