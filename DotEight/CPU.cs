@@ -15,7 +15,10 @@ namespace DotEight
 
         public byte[] V;
 
-        private UInt16 I; // Used to store a memory address for some opcodes
+        public byte DelayTimer;
+        public byte SoundTimer;
+
+        public UInt16 I; // Used to store a memory address for some opcodes
 
         // Screen
         public Framebuffer CurrentFramebuffer { get; set; }
@@ -112,16 +115,16 @@ namespace DotEight
                             return 0;
                     }
                 case 0x9000:
-                    ProgramCounter += V[(UInt16)(opcode & 0x0F00)] != (UInt16)(opcode & 0x00F0) ? (UInt16)2 : (UInt16)0;
+                    ProgramCounter += V[(UInt16)(opcode & 0x0F00) >> 8] != V[(UInt16)(opcode & 0x00F0) >> 4] ? (UInt16)2 : (UInt16)0;
                     return 20;
                 case 0xA000:
                     I = (UInt16)(opcode & 0x0FFF);
                     return 21;
                 case 0xB000:
-                    ProgramCounter = (UInt16)(V[0] + (byte)(opcode & 0x0FFF));
+                    ProgramCounter = (UInt16)(V[0] + (opcode & 0x0FFF));
                     return 22;
                 case 0xC000:
-                    V[(UInt16)(opcode & 0x0F00)] = (byte)((UInt16)new Random(255).Next() & (UInt16)(opcode & 0x00FF));
+                    V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)((UInt16)new Random(255).Next() & (UInt16)(opcode & 0x00FF));
                     return 23;
                 case 0xD000:
                     return 24;
@@ -139,15 +142,18 @@ namespace DotEight
                     switch (opcode & 0xF0FF)
                     {
                         case 0xF007:
+                            V[(UInt16)(opcode & 0x0F00) >> 8] = DelayTimer;
                             return 27;
                         case 0xF00A:
                             return 28;
                         case 0xF015:
+                            DelayTimer = V[(UInt16)(opcode & 0x0F00) >> 8];
                             return 29;
                         case 0xF018:
+                            SoundTimer = V[(UInt16)(opcode & 0x0F00) >> 8];
                             return 30;
                         case 0xF01E:
-                            I += V[(UInt16)(opcode & 0x0F00)];
+                            I += V[(UInt16)(opcode & 0x0F00) >> 8];
                             return 31;
                         case 0xF029:
                             return 32;

@@ -192,28 +192,28 @@ namespace DotEightTests
         [TestMethod]
         public void SkipNotEqualsRegister()
         {
-            int expected = 20;
-            UInt16 opcode = 0x9110;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x30;
+            cpu.V[5] = 0x33;
+            cpu.ProgramCounter = 0x202;
+            cpu.Execute(0x9450);
+            UInt16 expected = 0x202 + 2;
+            Assert.AreEqual(expected, cpu.ProgramCounter);
         }
 
         [TestMethod]
         public void SetI()
         {
-            int expected = 21;
-            UInt16 opcode = 0xAAAA;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.Execute(0xA330);
+            Assert.AreEqual(0x330, cpu.I);
         }
 
         [TestMethod]
         public void JumpPlusV0()
         {
-            int expected = 22;
-            UInt16 opcode = 0xBEEE;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.ProgramCounter = 0x202;
+            cpu.V[0] = 0x20;
+            cpu.Execute(0xB222);
+            Assert.AreEqual(0x242, cpu.ProgramCounter);
         }
 
         [TestMethod]
@@ -255,10 +255,9 @@ namespace DotEightTests
         [TestMethod]
         public void GetDelayTimer()
         {
-            int expected = 27;
-            UInt16 opcode = 0xF207;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.DelayTimer = 0x69;
+            cpu.Execute(0xF407);
+            Assert.AreEqual(0x69, cpu.V[4]);
         }
 
         [TestMethod]
@@ -273,28 +272,26 @@ namespace DotEightTests
         [TestMethod]
         public void SetDelayTimer()
         {
-            int expected = 29;
-            UInt16 opcode = 0xF115;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x11;
+            cpu.Execute(0xF415);
+            Assert.AreEqual(0x11, cpu.DelayTimer);
         }
 
         [TestMethod]
         public void SetSoundTimer()
         {
-            int expected = 30;
-            UInt16 opcode = 0xF918;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.V[4] = 0x11;
+            cpu.Execute(0xF418);
+            Assert.AreEqual(0x11, cpu.SoundTimer);
         }
 
         [TestMethod]
         public void AddToI()
         {
-            int expected = 31;
-            UInt16 opcode = 0xFF1E;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.I = 0x200;
+            cpu.V[4] = 0x11;
+            cpu.Execute(0xF41E);
+            Assert.AreEqual(0x211, cpu.I);
         }
 
         [TestMethod]
