@@ -31,7 +31,7 @@ namespace DotEight
             int frames_skipped;
 
             CPU cpu = new CPU();
-            cpu.LoadROM("C:\\Users\\jamie\\Downloads\\Clock Program.ch8");
+            cpu.LoadROM("C:\\Users\\jamie\\Downloads\\Pong.ch8");
 
             // Create the main window
             RenderWindow app = new RenderWindow(new VideoMode(1280, 640), "Dot Eight");

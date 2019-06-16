@@ -43,13 +43,13 @@ namespace DotEight
             }
         }
 
-        public int DrawSprite(int x, int y, Sprite sprite)
+        public int DrawSprite(int x, int y, byte[] pixels)
         {
             int collision = 0;
             int z = 0;
-            for (int i = y; i < y + sprite.Pixels.Length; i++)
+            for (int i = y; i < y + pixels.Length; i++)
             {
-                byte row = sprite.Pixels[z];
+                byte row = pixels[z];
                 for (int j = x; j < x + 8; j++)
                 {
                     if ((row & 0b1000_0000) == 0b1000_0000)

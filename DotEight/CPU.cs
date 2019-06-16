@@ -199,7 +199,7 @@ namespace DotEight
                         pixels[j - I] = MEMORY[j];
                     }
 
-                    V[0xF] = (byte)CurrentFramebuffer.DrawSprite(dx, dy, new Sprite(pixels));
+                    V[0xF] = (byte)CurrentFramebuffer.DrawSprite(dx, dy, pixels);
                     ProgramCounter += 2;
                     return 24;
                 case 0xE000:
