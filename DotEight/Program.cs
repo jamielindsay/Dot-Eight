@@ -31,7 +31,7 @@ namespace DotEight
             int frames_skipped;
 
             CPU cpu = new CPU();
-            cpu.LoadROM("C:\\Users\\jamie\\Downloads\\Pong.ch8");
+            cpu.LoadROM("C:\\Users\\jamie\\Downloads\\Trip8.ch8");
 
             // Create the main window
             RenderWindow app = new RenderWindow(new VideoMode(1280, 640), "Dot Eight");
@@ -69,7 +69,7 @@ namespace DotEight
 
                 // Draw pixels
                 Framebuffer fb = cpu.CurrentFramebuffer;
-                foreach (RectangleShape pixel in fb.Screen)
+                foreach (RectangleShape pixel in fb.Frame)
                 {
                     app.Draw(pixel);
                 }

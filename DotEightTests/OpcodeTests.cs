@@ -17,7 +17,7 @@ namespace DotEightTests
         public void Clear()
         {
             cpu.Execute(0x00E0);
-            foreach (RectangleShape pixel in cpu.CurrentFramebuffer.Screen)
+            foreach (RectangleShape pixel in cpu.CurrentFramebuffer.Frame)
             {
                 Assert.AreEqual(pixel.FillColor, new Color(0, 0, 0));
             }
