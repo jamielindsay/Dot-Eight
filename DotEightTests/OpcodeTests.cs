@@ -17,7 +17,7 @@ namespace DotEightTests
         public void Clear()
         {
             cpu.Execute(0x00E0);
-            foreach (RectangleShape pixel in cpu.CurrentFramebuffer.Pixels)
+            foreach (RectangleShape pixel in cpu.CurrentFramebuffer.Screen)
             {
                 Assert.AreEqual(pixel.FillColor, new Color(0, 0, 0));
             }
@@ -306,28 +306,42 @@ namespace DotEightTests
         [TestMethod]
         public void BCD()
         {
-            int expected = 33;
-            UInt16 opcode = 0xF133;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.I = 0x202;
+            cpu.V[2] = 254;
+            cpu.Execute(0xF233);
+            Assert.AreEqual(2, cpu.MEMORY[cpu.I]);
+            Assert.AreEqual(5, cpu.MEMORY[cpu.I + 1]);
+            Assert.AreEqual(4, cpu.MEMORY[cpu.I + 2]);
         }
 
         [TestMethod]
         public void DumpRegisters()
         {
-            int expected = 34;
-            UInt16 opcode = 0xF755;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.I = 0x200;
+            cpu.V[0] = 0x01;
+            cpu.V[1] = 0x10;
+            cpu.V[2] = 0x02;
+            cpu.V[3] = 0x20;
+            cpu.Execute(0xF355);
+            Assert.AreEqual(0x01, cpu.MEMORY[cpu.I]);
+            Assert.AreEqual(0x10, cpu.MEMORY[cpu.I + 1]);
+            Assert.AreEqual(0x02, cpu.MEMORY[cpu.I + 2]);
+            Assert.AreEqual(0x20, cpu.MEMORY[cpu.I + 3]);
         }
 
         [TestMethod]
         public void LoadRegisters()
         {
-            int expected = 35;
-            UInt16 opcode = 0xF265;
-            int result = cpu.Execute(opcode);
-            Assert.AreEqual(expected, result);
+            cpu.I = 0x200;
+            cpu.MEMORY[cpu.I] = 0x01;
+            cpu.MEMORY[cpu.I + 1] = 0x02;
+            cpu.MEMORY[cpu.I + 2] = 0x03;
+            cpu.MEMORY[cpu.I + 3] = 0x04;
+            cpu.Execute(0xF365);
+            Assert.AreEqual(0x01, cpu.V[0]);
+            Assert.AreEqual(0x02, cpu.V[1]);
+            Assert.AreEqual(0x03, cpu.V[2]);
+            Assert.AreEqual(0x04, cpu.V[3]);
         }
     }
 }

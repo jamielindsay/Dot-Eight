@@ -10,11 +10,14 @@ namespace DotEight
 {
     public class Framebuffer
     {
-        public RectangleShape[] Pixels { get; }
+        public const int Width = 64;
+        public const int Height = 32;
+
+        public RectangleShape[,] Screen { get; }
 
         public Framebuffer()
         {
-            Pixels = new RectangleShape[2048];
+            Screen = new RectangleShape[Height, Width];
             ClearScreen();
         }
 
@@ -31,23 +34,58 @@ namespace DotEight
 
         public void ClearScreen()
         {
-            int i = 0;
-            for (int y = 0; y < 32; y++)
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < 64; x++)
+                for (int x = 0; x < Width; x++)
                 {
-                    Pixels[i] = NewPixel(new Vector2f(x * 20, y * 20), 0, 0, 0);
-                    i++;
+                    Screen[y, x] = NewPixel(new Vector2f(x * 20, y * 20), 0, 0, 0);
                 }
             }
         }
 
+        public int DrawSprite(int x, int y, Sprite sprite)
+        {
+            int collision = 0;
+            int z = 0;
+            for (int i = y; i < y + sprite.Pixels.Length; i++)
+            {
+                byte row = sprite.Pixels[z];
+                for (int j = x; j < x + 8; j++)
+                {
+                    if ((row & 0b1000_0000) == 0b1000_0000)
+                    {
+                        if (Screen[i % Height, j % Width].FillColor.Equals(new Color(255, 255, 255)))
+                        {
+                            //Console.WriteLine("Collision");
+                            Screen[i % Height, j % Width].FillColor = new Color(0, 0, 0);
+                            collision = 1;
+                        }
+                        else
+                        {
+                            //Console.WriteLine("Draw pixel");
+                            Screen[i % Height, j % Width].FillColor = new Color(255, 255, 255);
+                        }
+                    }
+                    else
+                    {
+                        //Console.WriteLine("No pixel");
+                        //Screen[i, j].FillColor = new Color(0, 0, 0);
+                    }
+
+                    row <<= 1;
+                    //Console.WriteLine(row);
+                }
+                z++;
+            }
+            return collision;
+        }
+
         public void TestDraw()
         {
-            Pixels[100].FillColor = new Color(255, 0, 0);
-            Pixels[101].FillColor = new Color(255, 255, 0);
-            Pixels[102].FillColor = new Color(255, 0, 0);
-            Pixels[103].FillColor = new Color(255, 0, 255);
+            Screen[10, 10].FillColor = new Color(255, 0, 0);
+            Screen[11, 10].FillColor = new Color(255, 255, 0);
+            Screen[12, 10].FillColor = new Color(255, 0, 0);
+            Screen[13, 10].FillColor = new Color(255, 0, 255);
         }
     }
 }
