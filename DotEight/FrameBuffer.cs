@@ -10,7 +10,7 @@ namespace DotEight
 
         private const int PixelScale = 20; // Window is 1280x640 pixels
 
-        public RectangleShape[,] Frame;
+        public RectangleShape[,] Frame { get; }
 
         public Framebuffer()
         {

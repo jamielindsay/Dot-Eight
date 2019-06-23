@@ -309,9 +309,9 @@ namespace DotEightTests
             cpu.I = 0x202;
             cpu.V[2] = 254;
             cpu.Execute(0xF233);
-            Assert.AreEqual(2, cpu.MEMORY[cpu.I]);
-            Assert.AreEqual(5, cpu.MEMORY[cpu.I + 1]);
-            Assert.AreEqual(4, cpu.MEMORY[cpu.I + 2]);
+            Assert.AreEqual(2, cpu.Memory[cpu.I]);
+            Assert.AreEqual(5, cpu.Memory[cpu.I + 1]);
+            Assert.AreEqual(4, cpu.Memory[cpu.I + 2]);
         }
 
         [TestMethod]
@@ -323,20 +323,20 @@ namespace DotEightTests
             cpu.V[2] = 0x02;
             cpu.V[3] = 0x20;
             cpu.Execute(0xF355);
-            Assert.AreEqual(0x01, cpu.MEMORY[cpu.I]);
-            Assert.AreEqual(0x10, cpu.MEMORY[cpu.I + 1]);
-            Assert.AreEqual(0x02, cpu.MEMORY[cpu.I + 2]);
-            Assert.AreEqual(0x20, cpu.MEMORY[cpu.I + 3]);
+            Assert.AreEqual(0x01, cpu.Memory[cpu.I]);
+            Assert.AreEqual(0x10, cpu.Memory[cpu.I + 1]);
+            Assert.AreEqual(0x02, cpu.Memory[cpu.I + 2]);
+            Assert.AreEqual(0x20, cpu.Memory[cpu.I + 3]);
         }
 
         [TestMethod]
         public void LoadRegisters()
         {
             cpu.I = 0x200;
-            cpu.MEMORY[cpu.I] = 0x01;
-            cpu.MEMORY[cpu.I + 1] = 0x02;
-            cpu.MEMORY[cpu.I + 2] = 0x03;
-            cpu.MEMORY[cpu.I + 3] = 0x04;
+            cpu.Memory[cpu.I] = 0x01;
+            cpu.Memory[cpu.I + 1] = 0x02;
+            cpu.Memory[cpu.I + 2] = 0x03;
+            cpu.Memory[cpu.I + 3] = 0x04;
             cpu.Execute(0xF365);
             Assert.AreEqual(0x01, cpu.V[0]);
             Assert.AreEqual(0x02, cpu.V[1]);

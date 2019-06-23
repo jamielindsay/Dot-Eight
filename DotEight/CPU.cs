@@ -1,14 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DotEight
 {
     public class CPU
     {
-        // Fonts
-        byte[] chip8_fontset = new byte[]
+        // Memory
+        private static readonly byte[] _fontset = new byte[]
         {
             0xF0, 0x90, 0x90, 0x90, 0xF0, //0
             0x20, 0x60, 0x20, 0x20, 0x70, //1
@@ -28,31 +27,32 @@ namespace DotEight
             0xF0, 0x80, 0xF0, 0x80, 0x80  //F
         };
 
-        // Memory
-        public byte[] MEMORY;
+        public byte[] Memory;
 
         // Registers
-        public UInt16 ProgramCounter; // Stores currently executing address
-        public Stack<UInt16> AddressStack; // Stack of addresses to return to after subroutine finishes
+        public UInt16 ProgramCounter;
+        public Stack<UInt16> AddressStack;
 
         public byte[] V;
 
         public byte DelayTimer;
         public byte SoundTimer;
 
-        public UInt16 I; // Used to store a memory address for some opcodes
+        public UInt16 I;
 
-        public Random rand;
+        public Random Rand;
 
         // Screen
-        public Framebuffer CurrentFramebuffer { get; set; }
+        public Framebuffer CurrentFramebuffer;
 
         public CPU()
         {
-            MEMORY = new byte[4096];
+            Memory = new byte[4096];
 
             for (int i = 0; i < 80; i++)
-                MEMORY[i] = chip8_fontset[i];
+            {
+                Memory[i] = _fontset[i];
+            }
 
             ProgramCounter = 0x0200;
             AddressStack = new Stack<UInt16>(16);
@@ -64,7 +64,7 @@ namespace DotEight
 
             I = 0;
 
-            rand = new Random();
+            Rand = new Random();
 
             CurrentFramebuffer = new Framebuffer();
         }
@@ -75,15 +75,32 @@ namespace DotEight
             int i2 = 0x200;
             foreach (byte b in ROM)
             {
-                MEMORY[i2] = b;
+                Memory[i2] = b;
                 i2++;
             }
         }
 
+        public void TimerTick()
+        {
+            if (DelayTimer > 0)
+            {
+                DelayTimer--;
+            }
+            if (SoundTimer > 0)
+            {
+                Console.Beep(500, (1000 / 60) * SoundTimer);
+                SoundTimer = 0;
+            }
+        }
+
+        public void NextInstruction()
+        {
+            UInt16 opcode = (UInt16)((Memory[ProgramCounter] << 8) + Memory[ProgramCounter + 1]);
+            Execute(opcode);
+        }
+
         public int Execute(UInt16 opcode)
         {
-            string ophex = String.Format("{0:X}", opcode);
-            Console.WriteLine("{0} : {1}", (ProgramCounter - 0x200), ophex);
             switch (opcode & 0xF000)
             {
                 case 0x0000:
@@ -185,21 +202,21 @@ namespace DotEight
                     ProgramCounter = (UInt16)(V[0] + (opcode & 0x0FFF));
                     return 22;
                 case 0xC000:
-                    V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)((UInt16)rand.Next(0, 0xFF + 1) & (UInt16)(opcode & 0x00FF));
+                    V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)((UInt16)Rand.Next(0, 0xFF + 1) & (UInt16)(opcode & 0x00FF));
                     ProgramCounter += 2;
                     return 23;
                 case 0xD000:
-                    int dx = V[(UInt16)(opcode & 0x0F00) >> 8];
-                    int dy = V[(UInt16)(opcode & 0x00F0) >> 4];
+                    int posx = V[(UInt16)(opcode & 0x0F00) >> 8];
+                    int posy = V[(UInt16)(opcode & 0x00F0) >> 4];
                     int n = (UInt16)(opcode & 0x000F);
 
                     byte[] pixels = new byte[n];
                     for (int j = I; j < n + I; j++)
                     {
-                        pixels[j - I] = MEMORY[j];
+                        pixels[j - I] = Memory[j];
                     }
 
-                    V[0xF] = (byte)CurrentFramebuffer.DrawSprite(dx, dy, pixels);
+                    V[0xF] = (byte)CurrentFramebuffer.DrawSprite(posx, posy, pixels);
                     ProgramCounter += 2;
                     return 24;
                 case 0xE000:
@@ -222,6 +239,7 @@ namespace DotEight
                             ProgramCounter += 2;
                             return 27;
                         case 0xF00A:
+                            V[(UInt16)(opcode & 0x0F00) >> 8] = (byte)Input.WaitForKeyPress();
                             ProgramCounter += 2;
                             return 28;
                         case 0xF015:
@@ -241,20 +259,20 @@ namespace DotEight
                             ProgramCounter += 2;
                             return 32;
                         case 0xF033:
-                            int x = V[(UInt16)(opcode & 0x0F00) >> 8];
-                            MEMORY[I] = (byte)(x / 100);
-                            MEMORY[I + 1] = (byte)((x / 10) % 10);
-                            MEMORY[I + 2] = (byte)(x % 10);
+                            int z = V[(UInt16)(opcode & 0x0F00) >> 8];
+                            Memory[I] = (byte)(z / 100);
+                            Memory[I + 1] = (byte)((z / 10) % 10);
+                            Memory[I + 2] = (byte)(z % 10);
                             ProgramCounter += 2;
                             return 33;
                         case 0xF055:
                             for (int fi = 0; fi <= (opcode & 0x0F00) >> 8; fi++)
-                                MEMORY[fi + I] = V[fi];
+                                Memory[fi + I] = V[fi];
                             ProgramCounter += 2;
                             return 34;
                         case 0xF065:
                             for (int fii = 0; fii <= (opcode & 0x0F00) >> 8; fii++)
-                                V[fii] = MEMORY[fii + I];
+                                V[fii] = Memory[fii + I];
                             ProgramCounter += 2;
                             return 35;
                         default:

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using SFML.Window;
+using SFML.Graphics;
 
 namespace DotEight
 {
     class Input
     {
-        private static Dictionary<int, Keyboard.Key> keyMappings = new Dictionary<int, Keyboard.Key>()
+        private static readonly Dictionary<int, Keyboard.Key> _keyMappings = new Dictionary<int, Keyboard.Key>()
         {
             { 1, Keyboard.Key.Num1 },
             { 2, Keyboard.Key.Num2 },
@@ -25,9 +26,24 @@ namespace DotEight
             { 0xB, Keyboard.Key.C },
             { 0xF, Keyboard.Key.V },
         };
+
         public static bool IsPressed(UInt16 key)
         {
-            return Keyboard.IsKeyPressed(keyMappings[key]);
+            return Keyboard.IsKeyPressed(_keyMappings[key % 16]);
+        }
+
+        public static int WaitForKeyPress()
+        {
+            while (true)
+            {
+                for (UInt16 i = 0; i < _keyMappings.Count; i++)
+                {
+                    if (IsPressed(i))
+                    {
+                        return i;
+                    }
+                }
+            }
         }
     }
 
