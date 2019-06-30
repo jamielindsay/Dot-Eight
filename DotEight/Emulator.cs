@@ -48,10 +48,12 @@ namespace DotEight
                 if (IsTime(lastClock, ClockSpeed))
                 {
                     cpu.NextInstruction();
+                    lastClock = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 }
                 if (IsTime(lastTimer, TimerSpeed))
                 {
                     cpu.TimerTick();
+                    lastTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 }
                 if (IsTime(lastFrame, FrameSpeed))
                 {
@@ -60,6 +62,7 @@ namespace DotEight
                     {
                         app.Draw(pixel);
                     }
+                    lastFrame = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 }
 
                 // Update the window

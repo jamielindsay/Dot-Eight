@@ -71,12 +71,12 @@ namespace DotEight
 
         public void LoadROM(string file)
         {
-            byte[] ROM = File.ReadAllBytes(file);
-            int i2 = 0x200;
-            foreach (byte b in ROM)
+            byte[] Rom = File.ReadAllBytes(file);
+            int i = 0x200;
+            foreach (byte b in Rom)
             {
-                Memory[i2] = b;
-                i2++;
+                Memory[i] = b;
+                i++;
             }
         }
 
@@ -114,7 +114,7 @@ namespace DotEight
                             ProgramCounter = AddressStack.Pop();
                             ProgramCounter += 2;
                             return 2;
-                        default: // Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
+                        default:
                             throw new Exception("Undefined instruction");
                     }
                 case 0x1000:
