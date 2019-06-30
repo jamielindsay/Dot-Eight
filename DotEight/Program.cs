@@ -5,7 +5,7 @@
         private static void Main()
         {
             Emulator emu = new Emulator();
-            string rom = "C:\\Users\\jamie\\Downloads\\Trip8.ch8";
+            string rom = "";
             emu.Run(rom);
         }
     }
